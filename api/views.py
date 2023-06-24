@@ -79,7 +79,7 @@ class register_user(APIView):
             token_obj,_=Token.objects.get_or_create(user=c)
             y=Fernet(generate_fernetkey(request.data["password"]))
             result_str = ''.join(random.choice(string.ascii_lowercase) for i in range(7))
-            userdata.objects.create(user=c,db_password=y.encrypt(result_str.encode()).decode())
+            userdata.objects.create(user=c,emailverfied=True,db_password=y.encrypt(result_str.encode()).decode())
             return Response({"token":str(token_obj),"data":t.data,"error":False})
         return Response({"status":403,'error':t.errors})
 class phoneverification(APIView):
@@ -88,14 +88,15 @@ class phoneverification(APIView):
     def get(self,request):
         if request.user.userdata.otp_limit>0:
             try:
-                userdata.objects.get(phone_number=request.data["phone_number"])
+                userdata.objects.get(phone_number=request.GET.get("phone_number"))
                 return Response({"Already":True})
             except userdata.DoesNotExist:
                 pass
                 
             try:
                 try:
-                    c=phone_verification.objects.get(phone_number=request.data["phone_number"])
+                   
+                    c=phone_verification.objects.get(phone_number=request.GET.get("phone_number"))
                     now = datetime.datetime.utcnow().replace(tzinfo=utc)
                     timediff = now - c.created
                     minutes = divmod(timediff.total_seconds(), 60) 
@@ -110,16 +111,16 @@ class phoneverification(APIView):
                 request.user.userdata.save()
                 v=phone_verification.objects.get(user=request.user)
                 v.otp=otp
-                requests.get('https://2factor.in/API/V1/a9fbe000-34fe-11ed-9c12-0200cd936042/SMS/+91{}/{}/'.format(request.data["phone_number"],otp))
-                v.phone_number=request.data["phone_number"]
+                requests.get('https://2factor.in/API/V1/a9fbe000-34fe-11ed-9c12-0200cd936042/SMS/+91{}/{}/'.format(request.GET.get("phone_number"),otp))
+                v.phone_number=request.GET.get("phone_number")
                 v.save()
                 return Response({"otp":"sucess"})
             except phone_verification.DoesNotExist:
                 c=random.randint(1000,10000)
                 request.user.userdata.otp_limit-=1
                 request.user.userdata.save()
-                phone_verification.objects.create(user=request.user,phone_number=request.data["phone_number"],otp=c)
-                requests.get('https://2factor.in/API/V1/a9fbe000-34fe-11ed-9c12-0200cd936042/SMS/+91{}/{}/'.format(request.data["phone_number"],c))
+                phone_verification.objects.create(user=request.user,phone_number=request.GET.get("phone_number"),otp=c)
+                requests.get('https://2factor.in/API/V1/a9fbe000-34fe-11ed-9c12-0200cd936042/SMS/+91{}/{}/'.format(request.GET.get("phone_number"),c))
                 return Response({"otp":"sucess"})
         else:
             return Response({"Limit":"over"})
@@ -147,13 +148,13 @@ class emailverification(APIView):
     def get(self,request):
         if request.user.userdata.otp_limit>0:
             try:
-                User.objects.get(email=request.data["email"])
+                User.objects.get(email=request.GET.get("email"))
                 return Response({"Already":True})
             except Exception as e:
                 pass
             try:
                 try:
-                    c=email_verification.objects.get(email=request.data["email"])
+                    c=email_verification.objects.get(email=request.GET.get("email"))
                     now = datetime.datetime.utcnow().replace(tzinfo=utc)
                     timediff = now - c.created
                     minutes = divmod(timediff.total_seconds(), 60) 
@@ -166,8 +167,8 @@ class emailverification(APIView):
                 otp=random.randint(1000,10000)
                 v=email_verification.objects.get(user=request.user)
                 v.otp=otp
-                send_mail('Busyness', 'Dear {},Your Otp is {}'.format(request.user.username,otp), 'devendran635@gmail.com', [request.data["email"]])
-                v.email=request.data["email"]
+                send_mail('Busyness', 'Dear {},Your Otp is {}'.format(request.user.username,otp), 'devendran635@gmail.com', [request.GET.get("email")])
+                v.email=request.GET.get("email")
                 v.save()
                 request.user.userdata.otp_limit-=1
                 request.user.userdata.save()
@@ -176,8 +177,8 @@ class emailverification(APIView):
                 c=random.randint(1000,10000)
                 request.user.userdata.otp_limit-=1
                 request.user.userdata.save()
-                email_verification.objects.create(user=request.user,email=request.data["email"],otp=c)
-                send_mail('Busyness', 'Dear {},Your Otp is {}'.format(request.user.username,c), 'devendran635@gmail.com', [request.data["email"]])
+                email_verification.objects.create(user=request.user,email=request.GET.get("email"),otp=c)
+                send_mail('Busyness', 'Dear {},Your Otp is {}'.format(request.user.username,c), 'devendran635@gmail.com', [request.GET.get("email")])
                 return Response({"otp":"sucess"})
         else:
             return Response({"Limit":"over"})
@@ -199,7 +200,5 @@ class emailverification(APIView):
             return Response({"verified":False})
         except email_verification.DoesNotExist:
             return Response({"error":True})
-
-
 
 
