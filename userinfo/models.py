@@ -34,4 +34,10 @@ class usernews(models.Model):
     news_type=models.IntegerField()
     def __str__(self):
         return self.image.name
+class FileModel(models.Model):
+    filename = models.CharField(max_length=255)
+    file = models.FileField(upload_to='user_files/')
+    created_at = models.DateTimeField(auto_now_add=True)
+    def __str__(self):
+        return self.filename
     
