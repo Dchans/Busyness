@@ -1,7 +1,9 @@
 from django.http import HttpResponse
 from rest_framework.response import Response
 from api.serializer import register_serializer, user_data,update_data,ChangePasswordSerializer,news_serializer
-from userinfo.models import  userdata,phone_verification,email_verification,usernews
+from userinfo.models import  userdata,phone_verification,email_verification,usernews,FileModel
+from django.http import FileResponse,Http404
+from django.shortcuts import get_object_or_404
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.models import Token
@@ -200,5 +202,16 @@ class emailverification(APIView):
             return Response({"verified":False})
         except email_verification.DoesNotExist:
             return Response({"error":True})
+def download_database(request, file_id):
+     try:
+        file = get_object_or_404(FileModel, id=file_id)  
+        file_path = file.file.path 
+        response = FileResponse(open(file_path, 'rb'))
+        response['Content-Type'] = 'text/plain'
+        response['Content-Disposition'] = 'attachment; filename="{}"'.format(file.filename)  # Replace 'filename' with the actual field name that stores the file name
+        return response
+     except Http404:
+        # Handle the case when the file is not found
+        return HttpResponse("File not found.", status=404)
 
 
