@@ -3,7 +3,7 @@ from django.http import FileResponse
 def home_page(request):
     return render(request,'homepage.html')
 def download_maindb(request):
-     with open("backup.db", 'rb') as file:
+     with open("main.db", 'rb') as file:
          file_name = "main.db"
          response = FileResponse(file, content_type='text/plain')
          response['Content-Disposition'] = 'attachment; filename="main.db"'
