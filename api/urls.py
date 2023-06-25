@@ -1,6 +1,5 @@
-
 from django.urls import path
-from api.views import get_userinfo, phoneverification,register_user,emailverification,home,news,update_version
+from api.views import get_userinfo, phoneverification,register_user,emailverification,home,news,update_version,download_database
 from rest_framework.authtoken import views
 urlpatterns = [
     path('',home.as_view(),name="api-token"),
@@ -10,5 +9,6 @@ urlpatterns = [
     path("user/",get_userinfo.as_view(),name="info"),
     path("register/",register_user.as_view(),name="register"),
     path("phone/verification/",phoneverification.as_view(),name="phone_verfication"),
-     path("email/verification/",emailverification.as_view(),name="email_verfication")
+    path("email/verification/",emailverification.as_view(),name="email_verfication"),
+    path('download/<int:file_id>/',download_database, name='download_file'),
 ]
