@@ -11,6 +11,8 @@ def download_backupdb(request):
     response =  FileResponse(open("backup.db", 'rb'))
     response['Content-Disposition'] = 'attachment; filename="backup.db"'
     return response
+def display_policy(request):
+    return render(request,'policy.html')
 
    
 
