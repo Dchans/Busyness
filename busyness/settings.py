@@ -86,7 +86,7 @@ WSGI_APPLICATION = 'busyness.wsgi.application'
 DATABASES={
     'default':{
         'ENGINE':'django.db.backends.postgresql_psycopg2',
-        'NAME':'dchans',
+        'NAME':'busyness',
         'USER':'devendran',
         'PASSWORD':'dchan@9120',
         'HOST':'localhost',
